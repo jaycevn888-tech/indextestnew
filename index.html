@@ -1043,7 +1043,6 @@
         onAuthStateChanged(auth, async (user) => {
             window.updateLoginUI(user);
             if (user) {
-                // Real-time listener for instant synchronization (< 1s) across devices
                 if (unsubscribeFirestore) unsubscribeFirestore();
                 const userDocRef = doc(db, "users", user.uid, "data", "journalState");
                 
@@ -1056,9 +1055,8 @@
                         if (data.activeAccount) appState.activeAccount = data.activeAccount;
                         saveAppStateLocally();
                         updateAccountSelectors();
-                        switchTab(appState.currentTab, true); // true = silent refresh
+                        switchTab(appState.currentTab, true);
                     } else {
-                        // Initialize remote doc with default state
                         setDoc(userDocRef, {
                             trades: appState.trades,
                             planners: appState.planners,
@@ -1274,6 +1272,7 @@
         }
 
         function applyFiltersLive() {
+            appState.activeAccount = document.getElementById('filterAccount')?.value || appState.activeAccount;
             saveAppState();
             switchTab(appState.currentTab);
         }
@@ -1462,7 +1461,6 @@
             if (chartInstances['cumul']) chartInstances['cumul'].destroy();
 
             const filteredTrades = getFilteredTrades();
-            // Sort by chronological order (oldest to newest)
             const sorted = [...filteredTrades].sort((a,b) => new Date(a.date + ' ' + (a.hour?.substring(0,5) || '00:00')) - new Date(b.date + ' ' + (b.hour?.substring(0,5) || '00:00')));
 
             let cumSum = 0;
@@ -1575,7 +1573,6 @@
             document.getElementById('cardLongestLoss').innerText = `${losses} trades`;
             document.getElementById('cardCurrentStreak').innerText = `${wins} wins`;
 
-            // Peak-to-Trough Drawdown calculation based on PnL cumulative sequence
             const sortedByDate = [...filteredTrades].sort((a,b) => new Date(a.date) - new Date(b.date));
             let peak = 0;
             let maxDD = 0;
@@ -1593,7 +1590,6 @@
             const recoveryFactor = maxDD > 0 ? (netProfit / maxDD).toFixed(2) : (netProfit > 0 ? '15.00' : '0.00');
             document.getElementById('cardRecoveryFactor').innerText = recoveryFactor;
 
-            // Consistency = Max Winning Trade / Total Net P&L * 100%
             const maxWinTrade = validWins.length > 0 ? Math.max(...validWins.map(t => Number(t.pnl))) : 0;
             const consistencyPct = netProfit > 0 ? Math.min(100, (maxWinTrade / netProfit) * 100) : 0;
             document.getElementById('cardConsistency').innerText = consistencyPct.toFixed(2) + '%';
@@ -2030,13 +2026,12 @@
                     appState.trades.unshift(tradeObj);
                 }
 
-                // Immediate UI update & local save
                 saveAppStateLocally();
                 closeTradeModal();
                 switchTab(appState.currentTab);
 
-                // Background cloud sync
                 await saveCloudData();
+                alert("Đã lưu giao dịch thành công!");
             } catch (err) {
                 console.error("Lỗi khi lưu giao dịch:", err);
                 alert("Đã xảy ra lỗi khi lưu giao dịch: " + err.message);
@@ -2191,7 +2186,6 @@
             });
         }
 
-        // Winrate color rules: < 50% red, 50%-69% amber, >= 70% emerald
         function getTimeAnalysisWinRateColorClass(wr) {
             if (wr >= 70) return 'text-emerald-600 font-bold';
             if (wr >= 50) return 'text-amber-600 font-bold';
