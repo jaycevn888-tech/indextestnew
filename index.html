@@ -1247,11 +1247,23 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZGZwZWp6dGlmdGlrZWFlZ2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTE2NzEsImV4cCI6MjEwMDU2NzY3MX0.XcmFGJaEFh239iFU8-EiaVqf49xe66MoJklneD-vqzI';
 
         let supabaseClient = null;
-        try {
-            if (SUPABASE_URL && !SUPABASE_URL.includes('YOUR_') && window.supabase) {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        function initSupabaseClient() {
+            try {
+                if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR_')) {
+                    console.error('SUPABASE_URL missing');
+                    return null;
+                }
+                if (!window.supabase || !window.supabase.createClient) {
+                    console.error('Supabase SDK not loaded');
+                    return null;
+                }
+                return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (e) {
+                console.error('Supabase init failed', e);
+                return null;
             }
-        } catch (e) { console.warn('Supabase init failed', e); }
+        }
+        supabaseClient = initSupabaseClient();
 
         // ========== E2E CRYPTO (Web Crypto API) ==========
         let vaultKey = null;          // CryptoKey in memory only
@@ -1335,10 +1347,10 @@
                     }
                     localStorage.setItem('jacooodevn_secure_cache_v1', JSON.stringify(slim));
                     appState.trades = slim.trades;
-                    alert('Storage almost full: images cleared so data could be cached.');
+                    alert('Storage almost full: images cleared so data could be cached.'');
                 } catch (e2) {
                     console.error(e2);
-                    alert('Browser storage full. Export Backup and reduce images.');
+                    alert('Browser storage full. Export Backup and reduce images.'');
                     return false;
                 }
             }
@@ -1387,41 +1399,41 @@
         // ========== SUPABASE AUTH ==========
         async function signInWithGoogle() {
             if (!supabaseClient) {
-                alert('Chưa cấu hình Supabase.');
+                alert('Chưa cấu hình Supabase.'');
                 return;
             }
             if (location.protocol === 'file:') {
-                alert('Google login không chạy khi mở file HTML trực tiếp (file://).\n\nDùng Đăng nhập Email, hoặc host lên Netlify / localhost.');
+                alert('Google login không chạy khi mở file HTML trực tiếp (file://).\n\nDùng Đăng nhập Email, hoặc host lên Netlify / localhost.'');
                 return;
             }
             const { error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: { redirectTo: window.location.href.split('#')[0] }
             });
-            if (error) alert('Lỗi Google: ' + error.message);
+            if (error) alert('Lỗi Google: '' + error.message);
         }
 
         async function signInWithEmail() {
-            if (!supabaseClient) { alert('Chưa cấu hình Supabase'); return; }
-            const email = (document.getElementById('emailAuthEmail') && document.getElementById('emailAuthEmail').value || '').trim();
-            const password = (document.getElementById('emailAuthPass') && document.getElementById('emailAuthPass').value) || '';
-            if (!email || !password) { alert('Nhập email và password'); return; }
+            if (!supabaseClient) { alert('Chưa cấu hình Supabase''); return; }
+            const email = ((document.getElementById('emailAuthEmail') && document.getElementById('emailAuthEmail').value) || '').trim();
+            const password = ((document.getElementById('emailAuthPass') && document.getElementById('emailAuthPass').value) || '');
+            if (!email || !password) { alert('Nhập email và password''); return; }
             const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
-            if (error) alert('Đăng nhập thất bại: ' + error.message);
+            if (error) alert('Đăng nhập thất bại: '' + error.message);
         }
 
         async function signUpWithEmail() {
-            if (!supabaseClient) { alert('Chưa cấu hình Supabase'); return; }
-            const email = (document.getElementById('emailAuthEmail') && document.getElementById('emailAuthEmail').value || '').trim();
-            const password = (document.getElementById('emailAuthPass') && document.getElementById('emailAuthPass').value) || '';
-            if (!email || !password) { alert('Nhập email và password'); return; }
-            if (password.length < 6) { alert('Password tối thiểu 6 ký tự'); return; }
+            if (!supabaseClient) { alert('Chưa cấu hình Supabase''); return; }
+            const email = ((document.getElementById('emailAuthEmail') && document.getElementById('emailAuthEmail').value) || '').trim();
+            const password = ((document.getElementById('emailAuthPass') && document.getElementById('emailAuthPass').value) || '');
+            if (!email || !password) { alert('Nhập email và password''); return; }
+            if (password.length < 6) { alert('Password tối thiểu 6 ký tự''); return; }
             const { data, error } = await supabaseClient.auth.signUp({ email: email, password: password });
-            if (error) { alert('Đăng ký thất bại: ' + error.message); return; }
+            if (error) { alert('Đăng ký thất bại: '' + error.message); return; }
             if (data && data.user && !data.session) {
-                alert('Đăng ký OK. Tắt Confirm email trong Supabase (Auth → Providers → Email) rồi đăng nhập, hoặc xác nhận email.');
+                alert('Đăng ký OK. Tắt Confirm email trong Supabase (Auth → Providers → Email) rồi đăng nhập, hoặc xác nhận email.'');
             } else {
-                alert('Đăng ký thành công! Tiếp theo tạo Master Password.');
+                alert('Đăng ký thành công! Tiếp theo tạo Master Password.'');
             }
         }
 
@@ -1714,10 +1726,10 @@
                 URL.revokeObjectURL(url);
                 // Also refresh localStorage
                 saveLocalData();
-                alert('Đã xuất file backup JSON xuống ổ cứng.\nHãy cất file này ở thư mục an toàn (Documents, USB, Google Drive...).');
+                alert('Đã xuất file backup JSON xuống ổ cứng.\nHãy cất file này ở thư mục an toàn (Documents, USB, Google Drive...).'');
             } catch (e) {
                 console.error(e);
-                alert('Lỗi xuất backup: ' + e.message);
+                alert('Lỗi xuất backup: '' + e.message);
             }
         }
 
@@ -1728,7 +1740,7 @@
         function handleBackupFileSelect(event) {
             const file = event.target.files && event.target.files[0];
             if (!file) return;
-            if (!confirm('Nhập backup sẽ GHI ĐÈ toàn bộ dữ liệu hiện tại. Tiếp tục?')) {
+            if (!confirm('Nhập backup sẽ GHI ĐÈ toàn bộ dữ liệu hiện tại. Tiếp tục?'')) {
                 event.target.value = '';
                 return;
             }
@@ -1741,7 +1753,7 @@
                     // Prevent storage overflow: strip embedded base64 images if payload is huge
                     const rawSize = (e.target.result || '').length;
                     if (rawSize > 2_500_000) {
-                        const strip = confirm('Backup is very large (' + Math.round(rawSize/1024/1024*10)/10 + ' MB).
+                        const strip = confirm('Backup is very large ('' + Math.round(rawSize/1024/1024*10)/10 + ' MB).
 
 OK = import WITHOUT chart images (recommended)
 Cancel = try full import (may fail if storage full)');
@@ -1764,11 +1776,10 @@ Cancel = try full import (may fail if storage full)');
                     saveLocalData();
                     updateAccountSelectors();
                     switchTab('overview', true);
-                    alert('Backup restored.
-Trades: ' + appState.trades.length);
+                    alert('Backup restored.\nTrades: '' + appState.trades.length);
                 } catch (err) {
                     console.error(err);
-                    alert('Không đọc được file backup: ' + err.message);
+                    alert('Không đọc được file backup: '' + err.message);
                 }
                 event.target.value = '';
             };
@@ -1920,7 +1931,7 @@ Trades: ' + appState.trades.length);
         }
 
         function resetCloudDemoData() {
-            if (confirm('Khởi tạo dữ liệu mẫu Demo trên máy tính của bạn?')) {
+            if (confirm('Khởi tạo dữ liệu mẫu Demo trên máy tính của bạn?'')) {
                 appState.accounts = {
                     'Live': { name: 'Live Account', balance: 100000 },
                     'Demo': { name: 'Demo Account', balance: 50000 }
@@ -1958,7 +1969,7 @@ Trades: ' + appState.trades.length);
         }
 
         function clearCloudAllData() {
-            if (confirm('Xóa toàn bộ dữ liệu trên máy tính? Thao tác này không thể hoàn tác!')) {
+            if (confirm('Xóa toàn bộ dữ liệu trên máy tính? Thao tác này không thể hoàn tác!'')) {
                 appState.trades = [];
                 appState.planners = {};
                 saveLocalData();
@@ -2574,7 +2585,7 @@ Trades: ' + appState.trades.length);
 
         function savePlannerData() {
             saveLocalData();
-            alert('Đã lưu kế hoạch và ghi chú ngày thành công!');
+            alert('Đã lưu kế hoạch và ghi chú ngày thành công!'');
         }
 
         let currentModalImages = [];
@@ -2920,7 +2931,7 @@ Trades: ' + appState.trades.length);
 
         function editTrade(id) { openTradeModal(id); }
         async function deleteTrade(id) {
-            if (confirm('Bạn có chắc muốn xóa giao dịch này ?')) {
+            if (confirm('Bạn có chắc muốn xóa giao dịch này ?'')) {
                 appState.trades = appState.trades.filter(t => t.id !== id);
                 saveLocalData();
                 switchTab(appState.currentTab, false);
