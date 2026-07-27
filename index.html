@@ -85,7 +85,7 @@
             
             <div id="authContainer" class="flex items-center space-x-3 pl-4 border-l border-slate-200">
                 <div id="authLoggedOut" class="flex items-center space-x-2">
-                    <button onclick="signInWithGoogle()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold px-3.5 py-2 rounded-lg shadow-sm transition flex items-center space-x-2">
+                    <button onclick="signInWithGoogle()" title="Cần host HTTPS hoặc localhost" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold px-3.5 py-2 rounded-lg shadow-sm transition flex items-center space-x-2">
                         <i class="fa-brands fa-google text-red-500"></i>
                         <span>Đăng nhập Google</span>
                     </button>
@@ -186,12 +186,20 @@
                 <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <h3 class="text-base font-bold text-amber-900 mb-2">Đăng nhập Google + Master Password để mở Vault</h3>
-                <p class="text-xs text-amber-700 mb-6 leading-relaxed">Hệ thống lưu trữ 100%  Server an toàn tuyệt đối, gắn liền với tài khoản Google của bạn và đồng bộ thời gian thực trên mọi thiết bị.</p>
-                <button onclick="signInWithGoogle()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-5 py-3 rounded-xl shadow transition inline-flex items-center space-x-2">
-                    <i class="fa-brands fa-google text-sm"></i>
-                    <span>Đăng nhập Google</span>
-                </button>
+                <h3 class="text-base font-bold text-amber-900 mb-2">Đăng nhập để mở Vault</h3>
+                <p class="text-xs text-amber-700 mb-4 leading-relaxed">Email hoặc Google + Master Password. Dữ liệu mã hóa E2E trên Supabase.</p>
+                <div class="space-y-2.5 max-w-xs mx-auto text-left">
+                    <input id="emailAuthEmail" type="email" placeholder="Email" class="w-full border border-amber-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-500">
+                    <input id="emailAuthPass" type="password" placeholder="Password (min 6)" class="w-full border border-amber-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-500">
+                    <div class="flex gap-2">
+                        <button type="button" onclick="signInWithEmail()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2.5 rounded-lg shadow">Đăng nhập</button>
+                        <button type="button" onclick="signUpWithEmail()" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold px-3 py-2.5 rounded-lg">Đăng ký</button>
+                    </div>
+                    <button type="button" onclick="signInWithGoogle()" class="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold px-3 py-2.5 rounded-lg inline-flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-google text-red-500"></i><span>Google</span>
+                    </button>
+                    <p class="text-[10px] text-amber-800/80 leading-relaxed">Google không chạy với file:// — dùng Email hoặc host HTTPS (Netlify).</p>
+                </div>
             </div>
 
             <!-- DASHBOARD CONTAINER -->
@@ -211,10 +219,13 @@
                         <div class="flex items-center space-x-2">
                             <span class="text-xs text-slate-500 font-medium">Setup:</span>
                             <select id="filterSetup" onchange="applyFiltersLive()" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-medium text-slate-700">
-                                <option value="all">Tất cả Setup</option>
+                                <option value="all">All Setup</option>
                                 <option value="Continuation">Continuation</option>
                                 <option value="Reversal">Reversal</option>
-                                <option value="Breakout">Breakout</option>
+                                <option value="bb">Breaker Block</option>
+                                <option value="ob">Order Block</option>
+                                <option value="fvg">Fair Value Gap</option>
+                                <option value="liqui_sweep">Liquidity Sweep</option>
                             </select>
                         </div>
                         <div class="flex items-center space-x-2 bg-slate-50 border border-slate-300 px-2.5 py-1.5 rounded-lg text-xs">
@@ -920,11 +931,15 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
                     <div>
-                        <label class="font-bold text-slate-700 block mb-1">Trading Setup / Chiến lược</label>
+                        <label class="font-bold text-slate-700 block mb-1">Setup</label>
                         <select id="modalSetup" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:border-blue-500">
-                            <option value="Continuation">Continuation (Tiếp diễn)</option>
-                            <option value="Reversal">Reversal (Đảo chiều)</option>
-                            <option value="Breakout">Breakout (Phá vỡ)</option>
+                            <option value="">-- Select Setup --</option>
+                            <option value="Continuation">Continuation</option>
+                            <option value="Reversal">Reversal</option>
+                            <option value="bb">Breaker Block</option>
+                            <option value="ob">Order Block</option>
+                            <option value="fvg">Fair Value Gap</option>
+                            <option value="liqui_sweep">Liquidity Sweep</option>
                         </select>
                     </div>
                 </div>
@@ -935,41 +950,52 @@
                         <label class="font-bold text-slate-700 block mb-1">Loss Reason</label>
                         <select id="modalLossReason" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:border-blue-500">
                             <option value="">-- None / Win --</option>
-                            <option value="SL">SL</option>
-                            <option value="bias">bias</option>
-                            <option value="trailing SL">trailing SL</option>
-                            <option value="bad entry">bad entry</option>
-                            <option value="external factors">external factors</option>
-                            <option value="psychology">psychology</option>
-                            <option value="Same">Same</option>
+                            <option value="wrong_bias">Wrong bias</option>
+                            <option value="no_confirmation">No confirmation</option>
+                            <option value="early_entry">Early entry</option>
+                            <option value="late_entry">Late entry</option>
+                            <option value="counter_trend">Counter trend</option>
+                            <option value="bad_sl">Bad SL</option>
+                            <option value="sl_too_tight">SL too tight</option>
+                            <option value="overrisk">Overrisk</option>
+                            <option value="revenge_trade">Revenge trade</option>
+                            <option value="fomo">FOMO</option>
+                            <option value="overtrade">Overtrade</option>
+                            <option value="news_volatility">News volatility</option>
                         </select>
                     </div>
                     <div>
                         <label class="font-bold text-slate-700 block mb-1">Win Reason</label>
                         <select id="modalWinReason" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:border-blue-500">
                             <option value="">-- None / Loss --</option>
-                            <option value="correct bias">correct bias</option>
-                            <option value="SL">SL</option>
-                            <option value="Same">Same</option>
+                            <option value="correct_bias">Correct bias</option>
+                            <option value="htf_alignment">HTF alignment</option>
+                            <option value="clean_setup">Clean setup</option>
+                            <option value="good_entry">Good entry</option>
+                            <option value="liquidity_taken">Liquidity taken</option>
+                            <option value="strong_momentum">Strong momentum</option>
+                            <option value="rr_respected">RR respected</option>
+                            <option value="patient_hold">Patient hold</option>
+                            <option value="session_timing">Session timing</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- HOLD MANAGEMENT (FLAT LIST, NO HEADERS) -->
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <label class="font-bold text-slate-700 block mb-1">Hold Management Evaluation</label>
+                    <label class="font-bold text-slate-700 block mb-1">Hold Management</label>
                     <select id="modalHoldMgmt" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:border-blue-500">
-                        <option value="">-- Select Hold Evaluation --</option>
-                        <option value="hold_discipline">hold_discipline</option>
-                        <option value="hold_to_tp">hold_to_tp</option>
-                        <option value="hold_correct_bias">hold_correct_bias</option>
-                        <option value="early_exit">early_exit</option>
-                        <option value="fear_close">fear_close</option>
-                        <option value="greed_hold">greed_hold</option>
-                        <option value="hope_hold">hope_hold</option>
-                        <option value="move_sl">move_sl</option>
-                        <option value="overmanage">overmanage</option>
-                        <option value="Same">Same</option>
+                        <option value="">-- Select Hold Management --</option>
+                        <option value="hold_to_tp">Hold to TP</option>
+                        <option value="hold_runner">Hold runner</option>
+                        <option value="early_exit">Early exit</option>
+                        <option value="fear_close">Fear close</option>
+                        <option value="greed_hold">Greed hold</option>
+                        <option value="move_sl_be">Move SL to BE</option>
+                        <option value="move_sl_lock">Move SL lock profit</option>
+                        <option value="move_sl_bad">Move SL bad</option>
+                        <option value="overmanage">Overmanage</option>
+                        <option value="no_management">No management</option>
                     </select>
                 </div>
 
@@ -977,32 +1003,16 @@
                     <label class="font-bold text-slate-700 block mb-1">Emotional</label>
                     <select id="modalEmotionalState" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:border-blue-500">
                         <option value="">-- Select Emotional --</option>
-                        <optgroup label="Positive Emotions">
-                            <option value="Confident">Confident</option>
-                            <option value="Calm">Calm</option>
-                            <option value="Disciplined">Disciplined</option>
-                            <option value="Patient">Patient</option>
-                            <option value="Focused">Focused</option>
-                            <option value="Objective">Objective</option>
-                            <option value="In control">In control</option>
-                            <option value="Relaxed">Relaxed</option>
-                            <option value="Trusting system">Trusting system</option>
-                        </optgroup>
-                        <optgroup label="Negative Emotions">
-                            <option value="Fear">Fear</option>
-                            <option value="FOMO">FOMO</option>
-                            <option value="Greed">Greed</option>
-                            <option value="Impatient">Impatient</option>
-                            <option value="Anxious">Anxious</option>
-                            <option value="Stressed">Stressed</option>
-                            <option value="Confused">Confused</option>
-                            <option value="Angry">Angry</option>
-                            <option value="Revenge trading">Revenge trading</option>
-                            <option value="Self-doubt">Self-doubt</option>
-                        </optgroup>
-                        <optgroup label="Other">
-                            <option value="Same">Same</option>
-                        </optgroup>
+                        <option value="calm">Calm</option>
+                        <option value="confident">Confident</option>
+                        <option value="focused">Focused</option>
+                        <option value="neutral">Neutral</option>
+                        <option value="fomo">FOMO</option>
+                        <option value="fear">Fear</option>
+                        <option value="greedy">Greedy</option>
+                        <option value="revenge">Revenge</option>
+                        <option value="impatient">Impatient</option>
+                        <option value="tilted">Tilted</option>
                     </select>
                 </div>
 
@@ -1309,15 +1319,31 @@
 
         // ========== LOCAL CACHE (encrypted-friendly plain cache only while unlocked) ==========
         function saveLocalData() {
-            if (!vaultUnlocked) return;
+            if (!vaultUnlocked) return false;
+            const payload = getFullStatePayload();
             try {
-                const payload = getFullStatePayload();
                 localStorage.setItem('jacooodevn_secure_cache_v1', JSON.stringify(payload));
             } catch (e) {
-                console.error('local cache save error', e);
+                console.warn('cache full, strip images', e);
+                try {
+                    const slim = JSON.parse(JSON.stringify(payload));
+                    if (Array.isArray(slim.trades)) {
+                        slim.trades.forEach(t => {
+                            if (t.chartImgs && t.chartImgs.length) t.chartImgs = [];
+                            if (t.chartImg) t.chartImg = '';
+                        });
+                    }
+                    localStorage.setItem('jacooodevn_secure_cache_v1', JSON.stringify(slim));
+                    appState.trades = slim.trades;
+                    alert('Storage almost full: images cleared so data could be cached.');
+                } catch (e2) {
+                    console.error(e2);
+                    alert('Browser storage full. Export Backup and reduce images.');
+                    return false;
+                }
             }
-            // Fire-and-forget cloud sync
             syncEncryptedToCloud();
+            return true;
         }
 
         function loadLocalCache() {
@@ -1361,14 +1387,42 @@
         // ========== SUPABASE AUTH ==========
         async function signInWithGoogle() {
             if (!supabaseClient) {
-                alert('Chưa cấu hình Supabase.\\nMở file HTML, tìm SUPABASE_URL và SUPABASE_ANON_KEY rồi điền Project URL + anon key.');
+                alert('Chưa cấu hình Supabase.');
+                return;
+            }
+            if (location.protocol === 'file:') {
+                alert('Google login không chạy khi mở file HTML trực tiếp (file://).\n\nDùng Đăng nhập Email, hoặc host lên Netlify / localhost.');
                 return;
             }
             const { error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: { redirectTo: window.location.href.split('#')[0] }
             });
-            if (error) alert('Lỗi đăng nhập: ' + error.message);
+            if (error) alert('Lỗi Google: ' + error.message);
+        }
+
+        async function signInWithEmail() {
+            if (!supabaseClient) { alert('Chưa cấu hình Supabase'); return; }
+            const email = (document.getElementById('emailAuthEmail') && document.getElementById('emailAuthEmail').value || '').trim();
+            const password = (document.getElementById('emailAuthPass') && document.getElementById('emailAuthPass').value) || '';
+            if (!email || !password) { alert('Nhập email và password'); return; }
+            const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+            if (error) alert('Đăng nhập thất bại: ' + error.message);
+        }
+
+        async function signUpWithEmail() {
+            if (!supabaseClient) { alert('Chưa cấu hình Supabase'); return; }
+            const email = (document.getElementById('emailAuthEmail') && document.getElementById('emailAuthEmail').value || '').trim();
+            const password = (document.getElementById('emailAuthPass') && document.getElementById('emailAuthPass').value) || '';
+            if (!email || !password) { alert('Nhập email và password'); return; }
+            if (password.length < 6) { alert('Password tối thiểu 6 ký tự'); return; }
+            const { data, error } = await supabaseClient.auth.signUp({ email: email, password: password });
+            if (error) { alert('Đăng ký thất bại: ' + error.message); return; }
+            if (data && data.user && !data.session) {
+                alert('Đăng ký OK. Tắt Confirm email trong Supabase (Auth → Providers → Email) rồi đăng nhập, hoặc xác nhận email.');
+            } else {
+                alert('Đăng ký thành công! Tiếp theo tạo Master Password.');
+            }
         }
 
         async function handleLogout() {
@@ -1682,19 +1736,36 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (!data || typeof data !== 'object') throw new Error('File không hợp lệ');
-                    appState.trades = Array.isArray(data.trades) ? data.trades : [];
+                    if (!data || typeof data !== 'object') throw new Error('Invalid backup file');
+                    let trades = Array.isArray(data.trades) ? data.trades : [];
+                    // Prevent storage overflow: strip embedded base64 images if payload is huge
+                    const rawSize = (e.target.result || '').length;
+                    if (rawSize > 2_500_000) {
+                        const strip = confirm('Backup is very large (' + Math.round(rawSize/1024/1024*10)/10 + ' MB).
+
+OK = import WITHOUT chart images (recommended)
+Cancel = try full import (may fail if storage full)');
+                        if (strip) {
+                            trades = trades.map(t => {
+                                const x = Object.assign({}, t);
+                                x.chartImgs = [];
+                                x.chartImg = '';
+                                return x;
+                            });
+                        }
+                    }
+                    appState.trades = trades;
                     appState.planners = data.planners || {};
                     appState.accounts = data.accounts || { 'Live': { name: 'Live Account', balance: 100000 } };
                     appState.activeAccount = data.activeAccount || Object.keys(appState.accounts)[0] || 'Live';
                     if (data.currentYear != null) appState.currentYear = Number(data.currentYear);
                     if (data.currentMonth != null && data.currentMonth !== undefined) appState.currentMonth = Number(data.currentMonth);
                     if (data.plannerDate) appState.plannerDate = data.plannerDate;
-                    if (data.currentTab) appState.currentTab = data.currentTab;
                     saveLocalData();
                     updateAccountSelectors();
                     switchTab('overview', true);
-                    alert('Đã khôi phục thành công từ file backup!\nSố lệnh: ' + appState.trades.length);
+                    alert('Backup restored.
+Trades: ' + appState.trades.length);
                 } catch (err) {
                     console.error(err);
                     alert('Không đọc được file backup: ' + err.message);
@@ -1868,11 +1939,11 @@
                         fees: '30s',
                         pnl: 1161.6,
                         returnPct: 1.16,
-                        setup: 'Reversal',
+                        setup: 'ob',
                         lossReason: '',
-                        winReason: 'correct bias',
+                        winReason: 'clean_setup',
                         holdMgmt: 'hold_to_tp',
-                        emotionalState: 'Confident',
+                        emotionalState: 'confident',
                         confluences: ['SMT', 'iFVG'],
                         notes: 'Lệnh mẫu demo local...',
                         duration: '30s',
@@ -2520,7 +2591,7 @@
                             const ctx = canvas.getContext('2d');
                             let width = img.width;
                             let height = img.height;
-                            const maxDim = 800;
+                            const maxDim = 600;
                             if (width > height && width > maxDim) {
                                 height *= maxDim / width;
                                 width = maxDim;
@@ -2531,7 +2602,7 @@
                             canvas.width = width;
                             canvas.height = height;
                             ctx.drawImage(img, 0, 0, width, height);
-                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.45);
                             currentModalImages.push(compressedDataUrl);
                             renderImagePreviews();
                         };
@@ -2802,7 +2873,7 @@
                 const volume = Number(document.getElementById('modalVolume').value) || 1;
                 const fees = document.getElementById('modalFees').value || '1m';
                 const returnPct = Number(document.getElementById('modalReturnPct').value) || 0;
-                const setup = document.getElementById('modalSetup').value || 'Continuation';
+                const setup = document.getElementById('modalSetup').value || '';
                 const lossReason = document.getElementById('modalLossReason').value || '';
                 const winReason = document.getElementById('modalWinReason').value || '';
                 const holdMgmt = document.getElementById('modalHoldMgmt').value || '';
@@ -2886,7 +2957,7 @@
             lines.forEach((line, idx) => {
                 const parts = line.split(',').map(p => p.trim());
                 if (parts.length >= 7) {
-                    const [date, symbol, type, entry, close, volume, pnl, setup = 'Continuation', lossReason = '', winReason = '', holdMgmt = '', emotionalState = 'Confident'] = parts;
+                    const [date, symbol, type, entry, close, volume, pnl, setup = 'ob', lossReason = '', winReason = '', holdMgmt = '', emotionalState = 'Confident'] = parts;
                     const tradeObj = {
                         id: 'batch-' + Date.now() + '-' + idx,
                         account: appState.activeAccount,
@@ -2899,7 +2970,7 @@
                         fees: '1m',
                         pnl: Number(pnl) || 0,
                         returnPct: ((Number(pnl) || 0) / 100000) * 100,
-                        setup: setup || 'Continuation',
+                        setup: setup || '',
                         lossReason,
                         winReason,
                         holdMgmt,
